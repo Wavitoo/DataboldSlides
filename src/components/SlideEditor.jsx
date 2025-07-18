@@ -67,6 +67,7 @@ export default function SlideEditor() {
             onDelete={handleDelete}
             addButtonRef={addButtonRef}
             deleteButtonRef={deleteButtonRef}
+            setSlides={setSlides}
           />
           <SlideContent
             slide={slides[activeIndex]}
