@@ -1,4 +1,6 @@
 import { useState, useRef } from "react";
+import domtoimage from "dom-to-image-more";
+import jsPDF from "jspdf";
 
 import Toolbar from "./Toolbar";
 import SlideSidebar from "./SlideSidebar";
@@ -15,6 +17,8 @@ export default function SlideEditor() {
   ]);
 
   const [activeIndex, setActiveIndex] = useState(0);
+  const [showSidebar, setShowSidebar] = useState(true);
+
   const addButtonRef = useRef(null);
   const deleteButtonRef = useRef(null);
 
@@ -42,6 +46,78 @@ export default function SlideEditor() {
     deleteButtonRef.current?.blur();
   };
 
+  const handleExportPDF = async () => {
+    const originalIndex = activeIndex;
+    const pdf = new jsPDF({ unit: "px", format: "a4" });
+
+    setShowSidebar(false);
+
+    for (let i = 0; i < slides.length; i++) {
+      setActiveIndex(i);
+      await new Promise((res) => setTimeout(res, 300));
+
+      const node = document.querySelector("#slide-content");
+      if (!node) continue;
+
+      const dataUrl = await domtoimage.toPng(node, {
+        width: 1280,
+        height: 720,
+        style: {
+          transform: "scale(1)",
+          transformOrigin: "top left",
+          backgroundColor: "#fff",
+        },
+      });
+
+      const imgProps = pdf.getImageProperties(dataUrl);
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = (imgProps.height * pageWidth) / imgProps.width;
+
+      if (i > 0) pdf.addPage();
+      pdf.addImage(dataUrl, "PNG", 0, 0, pageWidth, pageHeight);
+    }
+
+    setActiveIndex(originalIndex);
+    setShowSidebar(true);
+
+    pdf.save("presentation.pdf");
+  };
+
+  const handleNew = () => {
+    const confirmed = confirm("Voulez-vous vraiment tout réinitialiser ?");
+    if (confirmed) {
+      setSlides([{ id: Date.now(), title: "Your Title ...", body: "Your Body ..." }]);
+      setActiveIndex(0);
+    }
+  };
+
+  const handleSave = () => {
+    const data = JSON.stringify(slides, null, 2);
+    localStorage.setItem("slides", data);
+    alert("Présentation enregistrée localement.");
+  };
+
+  const handleExport = () => {
+    const data = JSON.stringify(slides, null, 2);
+    const blob = new Blob([data], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "presentation.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+
+  const handleDuplicate = () => {
+    const current = slides[activeIndex];
+    const duplicate = { ...current, id: Date.now() };
+    const updated = [...slides];
+    updated.splice(activeIndex + 1, 0, duplicate);
+    setSlides(updated);
+    setActiveIndex(activeIndex + 1);
+  };
+
   const handleTitleChange = (e) => {
     const updated = [...slides];
     updated[activeIndex].title = e.target.value;
@@ -56,21 +132,33 @@ export default function SlideEditor() {
 
   return (
     <div className="flex flex-col h-full w-full">
-      <TopMenu />
+      <TopMenu
+        onNew={handleNew}
+        onSave={handleSave}
+        onExportPDF={handleExportPDF}
+        onExport={handleExport}
+        onAddSlide={handleAdd}
+        onDeleteSlide={handleDelete}
+        onDuplicateSlide={handleDuplicate}
+        onToggleSidebar={() => setShowSidebar((prev) => !prev)}
+        showSidebar={showSidebar}
+      />
       <Toolbar />
 
       <div className="flex-1 flex items-center justify-center p-4">
         <div className="aspect-video w-full max-w-[1200px] border border-foreground rounded-md flex p-6 gap-12 bg-background">
-          <SlideSidebar
-            slides={slides}
-            activeIndex={activeIndex}
-            setActiveIndex={setActiveIndex}
-            onAdd={handleAdd}
-            onDelete={handleDelete}
-            addButtonRef={addButtonRef}
-            deleteButtonRef={deleteButtonRef}
-            setSlides={setSlides}
-          />
+          {showSidebar && (
+            <SlideSidebar
+              slides={slides}
+              activeIndex={activeIndex}
+              setActiveIndex={setActiveIndex}
+              onAdd={handleAdd}
+              onDelete={handleDelete}
+              addButtonRef={addButtonRef}
+              deleteButtonRef={deleteButtonRef}
+              setSlides={setSlides}
+            />
+          )}
           <SlideContent
             slide={slides[activeIndex]}
             index={activeIndex}

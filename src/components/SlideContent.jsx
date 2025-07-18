@@ -30,7 +30,7 @@ export default function SlideContent({
   }
 
   return (
-    <div className="flex-1 border-2 border-blue-500 rounded-sm p-6 bg-muted relative space-y-4">
+    <div id="slide-content" className="flex-1 border-2 border-blue-500 rounded-sm p-6 bg-muted relative space-y-4">
       <div
         ref={titleRef}
         contentEditable
