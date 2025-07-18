@@ -98,7 +98,7 @@ export default function SlideSidebar({
   };
 
   return (
-    <div className="flex flex-col items-center gap-4 pr-2 max-h-full text-foreground">
+    <div id="slide-sidebar"className="flex flex-col items-center gap-4 pr-2 max-h-full text-foreground">
       <SlideToolbar
         onAdd={onAdd}
         onDelete={onDelete}

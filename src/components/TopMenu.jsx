@@ -1,3 +1,4 @@
+// TopMenu.jsx
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -7,23 +8,30 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
+import { useState } from "react";
 
 export default function TopMenu({
   slides,
   onNew,
   onSave,
   onExport,
-  onToggleSidebar,
-  onModePresentation,
 }) {
   const { theme, setTheme } = useTheme();
+  const [showSidebar, setShowSidebar] = useState(true);
+  const [presentationMode, setPresentationMode] = useState(false);
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
   };
 
+  const toggleSidebar = () => {
+    setShowSidebar((prev) => !prev);
+    const sidebar = document.querySelector("#slide-sidebar");
+    if (sidebar) sidebar.style.display = showSidebar ? "none" : "flex";
+  };
+
   return (
-    <div className="flex gap-4 px-6 py-2 border-b border-gray-300 dark:border-gray-400 bg-background text-foreground">
+    <div id="top-menu" className="flex flex-wrap items-center gap-2 px-4 py-2 border-b border-gray-300 dark:border-gray-400 bg-background text-foreground overflow-x-auto scrollbar-none">
       {/* Fichier */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -42,15 +50,9 @@ export default function TopMenu({
           <Button variant="ghost">Accueil</Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-          <DropdownMenuItem onSelect={() => alert("Ajout slide")}>
-            Ajouter Slide
-          </DropdownMenuItem>
-          <DropdownMenuItem onSelect={() => alert("Supprimer slide")}>
-            Supprimer Slide
-          </DropdownMenuItem>
-          <DropdownMenuItem onSelect={() => alert("Dupliquer slide")}>
-            Dupliquer Slide
-          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => alert("Ajout slide")}>Ajouter Slide</DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => alert("Supprimer slide")}>Supprimer Slide</DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => alert("Dupliquer slide")}>Dupliquer Slide</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -60,15 +62,9 @@ export default function TopMenu({
           <Button variant="ghost">Insertion</Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-          <DropdownMenuItem onSelect={() => alert("Insérer image")}>
-            Image
-          </DropdownMenuItem>
-          <DropdownMenuItem onSelect={() => alert("Insérer forme")}>
-            Forme
-          </DropdownMenuItem>
-          <DropdownMenuItem onSelect={() => alert("Zone de texte")}>
-            Zone de texte
-          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => alert("Insérer image")}>Image</DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => alert("Insérer forme")}>Forme</DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => alert("Zone de texte")}>Zone de texte</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -78,14 +74,11 @@ export default function TopMenu({
           <Button variant="ghost">Affichage</Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-          <DropdownMenuItem onSelect={onToggleSidebar}>
-            Masquer la barre latérale
+          <DropdownMenuItem onSelect={toggleSidebar}>
+            {showSidebar ? "Masquer la barre latérale" : "Afficher la barre latérale"}
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={toggleTheme}>
             {theme === "dark" ? "Mode clair" : "Mode sombre"}
-          </DropdownMenuItem>
-          <DropdownMenuItem onSelect={onModePresentation}>
-            Mode présentation
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
