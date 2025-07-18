@@ -11,13 +11,16 @@ export default function SlideContent({
   const bodyRef = useRef(null);
 
   useEffect(() => {
+    if (!slide) return;
+
     if (titleRef.current && titleRef.current.innerHTML !== slide.title) {
       titleRef.current.innerHTML = slide.title;
     }
     if (bodyRef.current && bodyRef.current.innerHTML !== slide.body) {
       bodyRef.current.innerHTML = slide.body;
     }
-  }, [slide.title, slide.body]);
+  }, [slide?.title, slide?.body]);
+
 
   if (empty) {
     return (
