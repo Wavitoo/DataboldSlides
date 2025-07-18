@@ -1,9 +1,8 @@
 import { useState, useRef } from "react";
 
+import Toolbar from "./Toolbar";
 import SlideSidebar from "./SlideSidebar";
 import SlideContent from "./SlideContent";
-// import TopMenu from "./TopMenu";
-// import Toolbar from "./Toolbar";
 
 export default function SlideEditor() {
   const [slides, setSlides] = useState([
@@ -56,8 +55,7 @@ export default function SlideEditor() {
 
   return (
     <div className="flex flex-col h-full w-full">
-      {/* <TopMenu /> */}
-      {/* <Toolbar /> */}
+      <Toolbar />
 
       <div className="flex-1 flex items-center justify-center p-4">
         <div className="aspect-video w-full max-w-[1400px] border border-black rounded-md flex p-6 gap-12 bg-white">
