@@ -1,15 +1,16 @@
 import { SketchPicker } from "react-color";
+import "./color-picker.css"
 
 export default function ColorPicker({ color, onChange, defaultColor = "#000" }) {
   return (
     <div
-      className="p-2 bg-white rounded shadow-md"
+      className="p-2 bg-popover rounded shadow-md text-foreground"
       onMouseDown={(e) => e.stopPropagation()}
       onClick={(e) => e.stopPropagation()}
     >
       <button
         type="button"
-        className="mb-2 text-sm text-blue-600 hover:underline"
+        className="mb-2 text-sm text-foreground hover:underline"
         onMouseDown={(e) => {
           e.preventDefault(); // garde le focus
           e.stopPropagation();
@@ -18,18 +19,18 @@ export default function ColorPicker({ color, onChange, defaultColor = "#000" }) 
       >
         Par défaut
       </button>
-
-      <SketchPicker
-        color={color}
-        disableAlpha
-        onChangeComplete={(color) => {
-          onChange(color.hex);
-        }}
-        onChange={(color) => {
-          // Optionnel : live update pendant le drag
-          onChange(color.hex);
-        }}
-      />
+      <div className="sketch-picker-wrapper">
+        <SketchPicker
+          color={color}
+          disableAlpha
+          onChangeComplete={(color) => {
+            onChange(color.hex);
+          }}
+          onChange={(color) => {
+            onChange(color.hex);
+          }}
+        />
+      </div>
     </div>
   );
 }

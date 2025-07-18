@@ -21,17 +21,16 @@ export default function SlideContent({
     }
   }, [slide?.title, slide?.body]);
 
-
   if (empty) {
     return (
-      <div className="flex-1 border-2 border-blue-500 rounded-sm p-6 bg-gray-100 flex items-center justify-center text-gray-400 text-lg">
+      <div className="flex-1 border-2 border-blue-500 rounded-sm p-6 bg-muted flex items-center justify-center text-muted-foreground text-lg">
         Aucune slide. Appuyez sur + pour en créer une.
       </div>
     );
   }
 
   return (
-    <div className="flex-1 border-2 border-blue-500 rounded-sm p-6 bg-gray-100 relative space-y-4">
+    <div className="flex-1 border-2 border-blue-500 rounded-sm p-6 bg-muted relative space-y-4">
       <div
         ref={titleRef}
         contentEditable
@@ -39,7 +38,7 @@ export default function SlideContent({
         onInput={(e) =>
           onTitleChange({ target: { value: e.currentTarget.innerHTML } })
         }
-        className="w-full text-3xl font-semibold bg-transparent outline-none resize-none text-gray-800 mb-12"
+        className="w-full text-3xl font-semibold bg-transparent outline-none resize-none text-foreground mb-12"
       />
 
       <div
@@ -49,10 +48,10 @@ export default function SlideContent({
         onInput={(e) =>
           onBodyChange({ target: { value: e.currentTarget.innerHTML } })
         }
-        className="w-full h-full bg-transparent outline-none resize-none text-sm text-gray-700"
+        className="w-full h-full bg-transparent outline-none resize-none text-sm text-muted-foreground"
       />
 
-      <span className="absolute bottom-2 right-4 text-sm text-gray-500">
+      <span className="absolute bottom-2 right-4 text-sm text-muted-foreground">
         {index + 1}
       </span>
     </div>

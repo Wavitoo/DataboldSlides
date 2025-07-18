@@ -99,14 +99,14 @@ export default function Toolbar() {
         exec(cmd);
         updateActiveStyles();
       }}
-      className={activeStyles[cmd] ? "border border-blue-500" : ""}
+      className={activeStyles[cmd] ? "border border-blue-500 bg-muted" : ""}
     >
-      <Icon className="w-4 h-4" />
+      <Icon className="w-4 h-4 text-foreground" />
     </Button>
   );
 
   return (
-    <div className="flex items-center gap-2 p-4 border-b bg-white">
+    <div className="flex items-center gap-2 p-4 border-b border-gray-300 dark:border-gray-400 bg-background text-foreground">
       {/* Font Family */}
       <Select
         onOpenChange={(open) => open && saveSelection()}

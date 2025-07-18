@@ -98,7 +98,7 @@ export default function SlideSidebar({
   };
 
   return (
-    <div className="flex flex-col items-center gap-4 pr-2 max-h-full">
+    <div className="flex flex-col items-center gap-4 pr-2 max-h-full text-foreground">
       <SlideToolbar
         onAdd={onAdd}
         onDelete={onDelete}
@@ -106,9 +106,9 @@ export default function SlideSidebar({
         deleteButtonRef={deleteButtonRef}
       />
 
-      <div className="flex-1 w-full overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
+      <div className="flex-1 w-full overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
         {slides.length === 0 ? (
-          <div className="text-center text-gray-500 text-sm px-4">
+          <div className="text-center text-muted-foreground text-sm px-4">
             Appuyez sur + pour créer votre première slide
           </div>
         ) : (
