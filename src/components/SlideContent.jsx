@@ -11,11 +11,11 @@ export default function SlideContent({
   const bodyRef = useRef(null);
 
   useEffect(() => {
-    if (titleRef.current && titleRef.current.innerText !== slide.title) {
-      titleRef.current.innerText = slide.title;
+    if (titleRef.current && titleRef.current.innerHTML !== slide.title) {
+      titleRef.current.innerHTML = slide.title;
     }
-    if (bodyRef.current && bodyRef.current.innerText !== slide.body) {
-      bodyRef.current.innerText = slide.body;
+    if (bodyRef.current && bodyRef.current.innerHTML !== slide.body) {
+      bodyRef.current.innerHTML = slide.body;
     }
   }, [slide.title, slide.body]);
 
@@ -33,17 +33,21 @@ export default function SlideContent({
         ref={titleRef}
         contentEditable
         suppressContentEditableWarning
-        onInput={(e) => onTitleChange({ target: { value: e.currentTarget.innerText } })}
+        onInput={(e) =>
+          onTitleChange({ target: { value: e.currentTarget.innerHTML } })
+        }
         className="w-full text-3xl font-semibold bg-transparent outline-none resize-none text-gray-800 mb-12"
-      ></div>
+      />
 
       <div
         ref={bodyRef}
         contentEditable
         suppressContentEditableWarning
-        onInput={(e) => onBodyChange({ target: { value: e.currentTarget.innerText } })}
+        onInput={(e) =>
+          onBodyChange({ target: { value: e.currentTarget.innerHTML } })
+        }
         className="w-full h-full bg-transparent outline-none resize-none text-sm text-gray-700"
-      ></div>
+      />
 
       <span className="absolute bottom-2 right-4 text-sm text-gray-500">
         {index + 1}
