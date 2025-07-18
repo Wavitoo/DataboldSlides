@@ -171,6 +171,11 @@ button:hover {
   --sidebar-ring: oklch(0.552 0.016 285.938);
 }
 
+.toolbar-btn {
+  @apply px-2 py-1 border rounded hover:bg-gray-200 font-bold;
+}
+
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
