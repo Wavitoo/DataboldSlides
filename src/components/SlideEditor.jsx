@@ -40,7 +40,6 @@ export default function SlideEditor() {
     setSlides(updatedSlides);
   };
 
-
   const handleDelete = () => {
     if (slides.length <= 1) {
       setSlides([]);
