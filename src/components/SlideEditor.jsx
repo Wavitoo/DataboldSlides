@@ -34,6 +34,13 @@ export default function SlideEditor() {
     addButtonRef.current?.blur();
   };
 
+  const handleUpdateSlide = (updatedSlide) => {
+    const updatedSlides = [...slides];
+    updatedSlides[activeIndex] = { ...slides[activeIndex], ...updatedSlide };
+    setSlides(updatedSlides);
+  };
+
+
   const handleDelete = () => {
     if (slides.length <= 1) {
       setSlides([]);
@@ -164,6 +171,7 @@ export default function SlideEditor() {
             index={activeIndex}
             onTitleChange={handleTitleChange}
             onBodyChange={handleBodyChange}
+            onUpdateSlide={handleUpdateSlide}
             empty={slides.length === 0}
           />
         </div>
