@@ -8,6 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
 import { useState } from "react";
+import { Menu } from "lucide-react";
 
 export default function TopMenu({
   onNew,
@@ -21,67 +22,95 @@ export default function TopMenu({
   showSidebar,
 }) {
   const { theme, setTheme } = useTheme();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
   };
 
+  const items = [
+    {
+      label: "Fichier",
+      children: [
+        { label: "Nouveau", action: onNew },
+        { label: "Enregistrer", action: onSave },
+        { label: "Exporter (JSON)", action: onExport },
+        { label: "Exporter en PDF", action: onExportPDF },
+      ],
+    },
+    {
+      label: "Accueil",
+      children: [
+        { label: "Ajouter Slide", action: onAddSlide },
+        { label: "Supprimer Slide", action: onDeleteSlide },
+        { label: "Dupliquer Slide", action: onDuplicateSlide },
+      ],
+    },
+    {
+      label: "Insertion",
+      children: [
+        { label: "Image", action: () => alert("Insérer image") },
+        { label: "Forme", action: () => alert("Insérer forme") },
+        { label: "Zone de texte", action: () => alert("Zone de texte") },
+      ],
+    },
+    {
+      label: "Affichage",
+      children: [
+        {
+          label: showSidebar ? "Masquer la barre latérale" : "Afficher la barre latérale",
+          action: onToggleSidebar,
+        },
+        {
+          label: theme === "dark" ? "Mode clair" : "Mode sombre",
+          action: toggleTheme,
+        },
+      ],
+    },
+  ];
+
   return (
-    <div
-      id="top-menu"
-      className="flex flex-wrap items-center gap-2 px-4 py-2 border-b border-gray-300 dark:border-gray-400 bg-background text-foreground overflow-x-auto scrollbar-none"
-    >
-      {/* Fichier */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost">Fichier</Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <DropdownMenuItem onSelect={onNew}>Nouveau</DropdownMenuItem>
-          <DropdownMenuItem onSelect={onSave}>Enregistrer</DropdownMenuItem>
-          <DropdownMenuItem onSelect={onExport}>Exporter (JSON)</DropdownMenuItem>
-          <DropdownMenuItem onSelect={onExportPDF}>Exporter en PDF</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+    <div className="w-full border-b border-gray-300 dark:border-gray-400 bg-background text-foreground px-4 py-2 flex items-center justify-between">
+      {/* Large screen menu */}
+      <div className="hidden md:flex gap-2 flex-wrap overflow-x-auto scrollbar-none">
+        {items.map((group) => (
+          <DropdownMenu key={group.label}>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost">{group.label}</Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              {group.children.map((item) => (
+                <DropdownMenuItem key={item.label} onSelect={item.action}>
+                  {item.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ))}
+      </div>
 
-      {/* Accueil */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost">Accueil</Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <DropdownMenuItem onSelect={onAddSlide}>Ajouter Slide</DropdownMenuItem>
-          <DropdownMenuItem onSelect={onDeleteSlide}>Supprimer Slide</DropdownMenuItem>
-          <DropdownMenuItem onSelect={onDuplicateSlide}>Dupliquer Slide</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      {/* Insertion */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost">Insertion</Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <DropdownMenuItem onSelect={() => alert("Insérer image")}>Image</DropdownMenuItem>
-          <DropdownMenuItem onSelect={() => alert("Insérer forme")}>Forme</DropdownMenuItem>
-          <DropdownMenuItem onSelect={() => alert("Zone de texte")}>Zone de texte</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      {/* Affichage */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost">Affichage</Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <DropdownMenuItem onSelect={onToggleSidebar}>
-            {showSidebar ? "Masquer la barre latérale" : "Afficher la barre latérale"}
-          </DropdownMenuItem>
-          <DropdownMenuItem onSelect={toggleTheme}>
-            {theme === "dark" ? "Mode clair" : "Mode sombre"}
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      {/* Mobile hamburger menu */}
+      <div className="md:hidden">
+        <DropdownMenu open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="icon" className="p-2">
+              <Menu className="w-5 h-5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            {items.map((group) => (
+              <div key={group.label}>
+                <DropdownMenuItem disabled>{group.label}</DropdownMenuItem>
+                {group.children.map((item) => (
+                  <DropdownMenuItem key={item.label} onSelect={item.action}>
+                    {item.label}
+                  </DropdownMenuItem>
+                ))}
+              </div>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </div>
   );
 }
