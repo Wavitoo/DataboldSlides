@@ -1,35 +1,14 @@
 import { useRef, useState, useEffect } from "react";
 import { GripHorizontal, MoveHorizontal } from "lucide-react";
 
-export default function SlideContent({ slide, index, empty }) {
+export default function SlideContent({ slide, index, empty, onUpdateSlide }) {
   const canvasRef = useRef(null);
   const dragRef = useRef(null);
   const resizeRef = useRef(null);
   const textareaRef = useRef(null);
+  const currentElementsRef = useRef([]);
 
-  const [elements, setElements] = useState([
-    {
-      id: "title",
-      content: slide?.title || "Your Title ...",
-      x: 50,
-      y: 40,
-      width: 300,
-      height: 60,
-      fontSize: 24,
-      style: "text-3xl font-bold",
-    },
-    {
-      id: "body",
-      content: slide?.body || "Your Body ...",
-      x: 50,
-      y: 120,
-      width: 400,
-      height: 100,
-      fontSize: 16,
-      style: "text-base",
-    },
-  ]);
-
+  const [elements, setElements] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [editingContent, setEditingContent] = useState("");
@@ -37,11 +16,50 @@ export default function SlideContent({ slide, index, empty }) {
   const [history, setHistory] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
 
-  const pushHistory = (newState) => {
-    setHistory((prev) => [...prev, elements]);
+  useEffect(() => {
+    if (slide?.elements) {
+      setElements(slide.elements);
+    } else {
+      setElements([
+        {
+          id: "title",
+          content: slide?.title || "Your Title ...",
+          x: 50,
+          y: 40,
+          width: 300,
+          height: 60,
+          fontSize: 24,
+          style: "text-3xl font-bold",
+        },
+        {
+          id: "body",
+          content: slide?.body || "Your Body ...",
+          x: 50,
+          y: 120,
+          width: 400,
+          height: 100,
+          fontSize: 16,
+          style: "text-base",
+        },
+      ]);
+    }
+
+    setSelectedId(null);
+    setEditingId(null);
+    setEditingContent("");
+    setHistory([]);
     setRedoStack([]);
-    setElements(newState);
-  };
+  }, [slide]);
+
+  useEffect(() => {
+    if (editingId && textareaRef.current) {
+      const el = textareaRef.current;
+      requestAnimationFrame(() => {
+        el.focus();
+        el.setSelectionRange(el.value.length, el.value.length);
+      });
+    }
+  }, [editingId]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -65,20 +83,22 @@ export default function SlideContent({ slide, index, empty }) {
         setElements(next);
       }
 
-      if (e.ctrlKey && key === "c" && selectedId && editingId === null) {
+      if (e.ctrlKey && key === "c" && selectedId && !editingId) {
         const found = elements.find((el) => el.id === selectedId);
         if (found) {
           setCopiedElement({ ...found, id: Date.now().toString(), x: found.x + 20, y: found.y + 20 });
         }
       }
 
-      if (e.ctrlKey && key === "v" && copiedElement && editingId === null) {
-        pushHistory([...elements, copiedElement]);
+      if (e.ctrlKey && key === "v" && copiedElement && !editingId) {
+        const newElements = [...elements, copiedElement];
+        pushHistory(newElements);
         setSelectedId(copiedElement.id);
         setCopiedElement(null);
+        onUpdateSlide?.({ elements: newElements });
       }
 
-      if (e.ctrlKey && key === "d" && selectedId && editingId === null) {
+      if (e.ctrlKey && key === "d" && selectedId && !editingId) {
         e.preventDefault();
         const found = elements.find((el) => el.id === selectedId);
         if (found) {
@@ -88,54 +108,55 @@ export default function SlideContent({ slide, index, empty }) {
             x: found.x + 30,
             y: found.y + 30,
           };
-          pushHistory([...elements, newEl]);
+          const newElements = [...elements, newEl];
+          pushHistory(newElements);
           setSelectedId(newEl.id);
+          onUpdateSlide?.({ elements: newElements });
         }
       }
 
-      if (e.ctrlKey && key === "x" && selectedId && editingId === null) {
+      if (e.ctrlKey && key === "x" && selectedId && !editingId) {
         e.preventDefault();
         const found = elements.find((el) => el.id === selectedId);
         if (found) {
           setCopiedElement({ ...found, id: Date.now().toString(), x: found.x + 20, y: found.y + 20 });
-          pushHistory(elements.filter((el) => el.id !== selectedId));
+          const filtered = elements.filter((el) => el.id !== selectedId);
+          pushHistory(filtered);
           setSelectedId(null);
+          onUpdateSlide?.({ elements: filtered });
         }
       }
 
       if (!editingId && selectedId) {
         const offset = e.shiftKey ? 10 : 1;
         const moveElement = (dx, dy) => {
-          setElements((prev) =>
-            prev.map((el) =>
-              el.id === selectedId
-                ? { ...el, x: el.x + dx, y: el.y + dy }
-                : el
-            )
+          const updated = elements.map((el) =>
+            el.id === selectedId ? { ...el, x: el.x + dx, y: el.y + dy } : el
           );
+          setElements(updated);
         };
 
         switch (e.key) {
-          case "ArrowUp":
+          case "arrowup":
             e.preventDefault();
             moveElement(0, -offset);
             break;
-          case "ArrowDown":
+          case "arrowdown":
             e.preventDefault();
             moveElement(0, offset);
             break;
-          case "ArrowLeft":
+          case "arrowleft":
             e.preventDefault();
             moveElement(-offset, 0);
             break;
-          case "ArrowRight":
+          case "arrowright":
             e.preventDefault();
             moveElement(offset, 0);
             break;
         }
       }
 
-      if (key === "enter" && selectedId && editingId === null) {
+      if (key === "enter" && selectedId && !editingId) {
         e.preventDefault();
         const el = elements.find((el) => el.id === selectedId);
         if (el) {
@@ -145,17 +166,19 @@ export default function SlideContent({ slide, index, empty }) {
       }
 
       if (key === "escape") {
-        if (editingId !== null) {
+        if (editingId) {
           setEditingId(null);
           setEditingContent("");
-        } else if (selectedId !== null) {
+        } else if (selectedId) {
           setSelectedId(null);
         }
       }
 
-      if ((key === "backspace" || key === "delete") && selectedId && editingId === null) {
-        pushHistory(elements.filter((el) => el.id !== selectedId));
+      if ((key === "backspace" || key === "delete") && selectedId && !editingId) {
+        const updated = elements.filter((el) => el.id !== selectedId);
+        pushHistory(updated);
         setSelectedId(null);
+        onUpdateSlide?.({ elements: updated });
       }
     };
 
@@ -163,62 +186,79 @@ export default function SlideContent({ slide, index, empty }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [elements, selectedId, copiedElement, history, redoStack, editingId]);
 
-  useEffect(() => {
-    if (editingId !== null && textareaRef.current) {
-      const el = textareaRef.current;
-      requestAnimationFrame(() => {
-        el.focus();
-        el.setSelectionRange(el.value.length, el.value.length);
-      });
-    }
-  }, [editingId]);
+  const pushHistory = (newState) => {
+    setHistory((prev) => [...prev, elements]);
+    setRedoStack([]);
+    setElements(newState);
+  };
 
+  const handleEditConfirm = () => {
+    if (editingId) {
+      const updated = elements.map((el) =>
+        el.id === editingId ? { ...el, content: editingContent } : el
+      );
+      pushHistory(updated);
+      setElements(updated);
+      onUpdateSlide?.({ elements: updated });
+    }
+    setEditingId(null);
+    setEditingContent("");
+  };
 
   const startDrag = (e, id) => {
-    if (editingId || resizeRef.current) return;
-    dragRef.current = { id, startX: e.clientX, startY: e.clientY };
+    if (editingId !== null || resizeRef.current) return;
+
+    const element = elements.find((el) => el.id === id);
+    dragRef.current = {
+      id,
+      startX: e.clientX,
+      startY: e.clientY,
+      initialX: element.x,
+      initialY: element.y,
+    };
+
     document.addEventListener("mousemove", onDrag);
     document.addEventListener("mouseup", stopDrag);
     e.stopPropagation();
   };
 
+
   const onDrag = (e) => {
-    if (!dragRef.current) return;
-    const { id, startX, startY } = dragRef.current;
+    if (!dragRef.current || !canvasRef.current) return;
+
+    const { id, startX, startY, initialX, initialY } = dragRef.current;
     const dx = e.clientX - startX;
     const dy = e.clientY - startY;
-    const canvasRect = canvasRef.current?.getBoundingClientRect();
 
-    setElements((prev) =>
-      prev.map((el) =>
-        el.id === id
-          ? {
-              ...el,
-              x: Math.min(Math.max(0, el.x + dx), canvasRect.width - el.width),
-              y: Math.min(Math.max(0, el.y + dy), canvasRect.height - el.height),
-            }
-          : el
-      )
-    );
+    const canvasRect = canvasRef.current.getBoundingClientRect();
 
-    dragRef.current.startX = e.clientX;
-    dragRef.current.startY = e.clientY;
+    setElements((prev) => {
+      const next = prev.map((el) => {
+        if (el.id !== id) return el;
+
+        const newX = Math.min(Math.max(0, initialX + dx), canvasRect.width - el.width);
+        const newY = Math.min(Math.max(0, initialY + dy), canvasRect.height - el.height);
+
+        return { ...el, x: newX, y: newY };
+      });
+
+      currentElementsRef.current = next;
+      return next;
+    });
+
   };
 
   const stopDrag = () => {
-    dragRef.current = null;
     document.removeEventListener("mousemove", onDrag);
     document.removeEventListener("mouseup", stopDrag);
+    dragRef.current = null;
+
+    onUpdateSlide?.({ elements: currentElementsRef.current });
   };
 
   const startResize = (e, id, direction) => {
     e.stopPropagation();
-    resizeRef.current = {
-      id,
-      startX: e.clientX,
-      startY: e.clientY,
-      direction,
-    };
+    resizeRef.current = { id, startX: e.clientX, startY: e.clientY, direction };
     document.addEventListener("mousemove", onResize);
     document.addEventListener("mouseup", stopResize);
   };
@@ -226,92 +266,51 @@ export default function SlideContent({ slide, index, empty }) {
   const onResize = (e) => {
     const minFontSize = 8;
     const minWidth = 50;
-
     if (!resizeRef.current) return;
+
     const { id, startX, startY, direction } = resizeRef.current;
     const dx = e.clientX - startX;
     const dy = e.clientY - startY;
 
-    const isCorner =
-      direction === "top-left" ||
-      direction === "top-right" ||
-      direction === "bottom-left" ||
-      direction === "bottom-right";
+    const isCorner = ["top-left", "top-right", "bottom-left", "bottom-right"].includes(direction);
 
-    setElements((prev) =>
-      prev.map((el) => {
-        if (el.id !== id) return el;
+    const updated = elements.map((el) => {
+      if (el.id !== id) return el;
 
-        let newWidth = el.width;
-        let newX = el.x;
-        let newY = el.y;
-        let newFontSize = el.fontSize;
+      let newWidth = el.width;
+      let newX = el.x;
+      let newY = el.y;
+      let newFontSize = el.fontSize;
 
-        if (isCorner) {
-          if (direction.includes("right")) {
-            newWidth = Math.max(minWidth, el.width + dx);
-          }
-          if (direction.includes("left")) {
-            newWidth = Math.max(minWidth, el.width - dx);
-            newX = el.x + dx;
-          }
-          if (direction.includes("top")) {
-            newY = el.y + dy;
-          }
-          newFontSize = Math.max(minFontSize, (el.fontSize * newWidth) / el.width);
-        } else {
-          if (direction === "right") {
-            newWidth = Math.max(minWidth, el.width + dx);
-          }
-          if (direction === "left") {
-            newWidth = Math.max(minWidth, el.width - dx);
-            newX = el.x + dx;
-          }
+      if (isCorner) {
+        if (direction.includes("right")) newWidth = Math.max(minWidth, el.width + dx);
+        if (direction.includes("left")) {
+          newWidth = Math.max(minWidth, el.width - dx);
+          newX = el.x + dx;
         }
+        if (direction.includes("top")) newY = el.y + dy;
+        newFontSize = Math.max(minFontSize, (el.fontSize * newWidth) / el.width);
+      } else {
+        if (direction === "right") newWidth = Math.max(minWidth, el.width + dx);
+        if (direction === "left") {
+          newWidth = Math.max(minWidth, el.width - dx);
+          newX = el.x + dx;
+        }
+      }
 
-        return {
-          ...el,
-          width: newWidth,
-          x: newX,
-          y: newY,
-          fontSize: newFontSize,
-        };
-      })
-    );
+      return { ...el, width: newWidth, x: newX, y: newY, fontSize: newFontSize };
+    });
 
+    setElements(updated);
     resizeRef.current.startX = e.clientX;
     resizeRef.current.startY = e.clientY;
   };
-
-
 
   const stopResize = () => {
     resizeRef.current = null;
     document.removeEventListener("mousemove", onResize);
     document.removeEventListener("mouseup", stopResize);
-  };
-
-  const handleSelect = (id) => {
-    setSelectedId(id);
-    setEditingId(null);
-  };
-
-  const handleDoubleClick = (id) => {
-    const el = elements.find((e) => e.id === id);
-    setEditingId(id);
-    setEditingContent(el.content);
-  };
-
-  const handleEditConfirm = () => {
-    if (editingId) {
-      pushHistory(
-        elements.map((el) =>
-          el.id === editingId ? { ...el, content: editingContent } : el
-        )
-      );
-    }
-    setEditingId(null);
-    setEditingContent("");
+    onUpdateSlide?.({ elements });
   };
 
   const deselect = () => {
@@ -338,10 +337,15 @@ export default function SlideContent({ slide, index, empty }) {
         {elements.map((el) => (
           <div
             key={el.id}
-            onMouseDown={(e) => startDrag(e, el.id)}
+            onMouseDown={(e) => {
+              if (editingId !== el.id) {
+                startDrag(e, el.id);
+              }
+            }}
             onClick={(e) => {
               e.stopPropagation();
-              handleSelect(el.id);
+              setSelectedId(el.id);
+              setEditingId(null);
             }}
             style={{
               position: "absolute",
@@ -359,8 +363,7 @@ export default function SlideContent({ slide, index, empty }) {
           >
             {editingId === el.id ? (
               <textarea
-              ref={textareaRef}
-                autoFocus
+                ref={textareaRef}
                 value={editingContent}
                 onChange={(e) => setEditingContent(e.target.value)}
                 onBlur={handleEditConfirm}
@@ -370,44 +373,31 @@ export default function SlideContent({ slide, index, empty }) {
                     setEditingContent("");
                   }
                 }}
+                onMouseDown={(e) => e.stopPropagation()}
                 className={`w-full bg-transparent outline-none resize-none ${el.style}`}
-                style={{
-                  fontSize: el.fontSize,
-                  whiteSpace: "pre-wrap",
-                  wordBreak: "break-word",
-                }}
+                style={{ fontSize: el.fontSize, whiteSpace: "pre-wrap", wordBreak: "break-word" }}
               />
             ) : (
               <div
                 className={`w-full h-full bg-transparent text-foreground ${el.style}`}
-                style={{
-                  fontSize: el.fontSize,
-                  whiteSpace: "pre-wrap",
-                  wordBreak: "break-word",
-                  cursor: "text",
-                }}
-                onMouseDown={(e) => e.stopPropagation()}
-                onDoubleClick={(e) => {
-                  e.stopPropagation();
-                  handleDoubleClick(el.id);
+                style={{ fontSize: el.fontSize, whiteSpace: "pre-wrap", wordBreak: "break-word" }}
+                onDoubleClick={() => {
+                  setEditingId(el.id);
+                  setEditingContent(el.content);
                 }}
               >
                 {el.content}
               </div>
             )}
 
-            {/* Resize Handles */}
             {selectedId === el.id && (
               <>
-                {/* Sides */}
                 <div className="absolute left-[-8px] top-1/2 -translate-y-1/2 cursor-ew-resize" onMouseDown={(e) => startResize(e, el.id, "left")}>
                   <MoveHorizontal size={14} />
                 </div>
                 <div className="absolute right-[-8px] top-1/2 -translate-y-1/2 cursor-ew-resize" onMouseDown={(e) => startResize(e, el.id, "right")}>
                   <MoveHorizontal size={14} />
                 </div>
-
-                {/* Corners */}
                 <div className="absolute top-[-6px] left-[-6px] cursor-nwse-resize" onMouseDown={(e) => startResize(e, el.id, "top-left")}>
                   <GripHorizontal size={12} />
                 </div>
@@ -424,10 +414,7 @@ export default function SlideContent({ slide, index, empty }) {
             )}
           </div>
         ))}
-
-        <span className="absolute bottom-2 right-4 text-sm text-muted-foreground">
-          {index + 1}
-        </span>
+        <span className="absolute bottom-2 right-4 text-sm text-muted-foreground">{index + 1}</span>
       </div>
     </div>
   );
