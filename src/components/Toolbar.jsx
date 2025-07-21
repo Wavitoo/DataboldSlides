@@ -5,11 +5,16 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import ColorPicker from "@/components/ui/color-picker";
-
 import {
   Bold,
   Italic,
@@ -19,6 +24,7 @@ import {
   AlignCenter,
   AlignRight,
   AlignJustify,
+  Menu,
 } from "lucide-react";
 
 import { useEffect, useState } from "react";
@@ -61,6 +67,8 @@ export default function Toolbar() {
   const [highlightColor, setHighlightColor] = useState("transparent");
   const [openTextColor, setOpenTextColor] = useState(false);
   const [openHighlight, setOpenHighlight] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+
   const [activeStyles, setActiveStyles] = useState({
     bold: false,
     italic: false,
@@ -106,124 +114,164 @@ export default function Toolbar() {
   );
 
   return (
-    <div className="flex items-center gap-2 p-4 border-b border-gray-300 dark:border-gray-400 bg-background text-foreground">
-      {/* Font Family */}
-      <Select
-        onOpenChange={(open) => open && saveSelection()}
-        onValueChange={(v) => {
-          restoreSelection();
-          exec("fontName", v);
-        }}
-      >
-        <SelectTrigger className="w-[160px]">
-          <SelectValue placeholder="Police" />
-        </SelectTrigger>
-        <SelectContent>
-          {fonts.map((f) => (
-            <SelectItem key={f} value={f}>
-              {f}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      {/* Font Size */}
-      <Select
-        onOpenChange={(open) => open && saveSelection()}
-        onValueChange={(v) => {
-          restoreSelection();
-          exec("fontSize", v);
-        }}
-      >
-        <SelectTrigger className="w-[80px]">
-          <SelectValue placeholder="Taille" />
-        </SelectTrigger>
-        <SelectContent>
-          {sizes.map((s) => (
-            <SelectItem key={s.value} value={s.value}>
-              {s.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      <Separator orientation="vertical" className="h-6" />
-
-      {/* Styles */}
-      {styleButton("bold", Bold)}
-      {styleButton("italic", Italic)}
-      {styleButton("underline", Underline)}
-      {styleButton("strikeThrough", Strikethrough)}
-
-      <Separator orientation="vertical" className="h-6" />
-
-      {/* Alignments */}
-      {styleButton("justifyLeft", AlignLeft)}
-      {styleButton("justifyCenter", AlignCenter)}
-      {styleButton("justifyRight", AlignRight)}
-      {styleButton("justifyFull", AlignJustify)}
-
-      <Separator orientation="vertical" className="h-6" />
-
-      {/* Text Color */}
-      <Popover
-        open={openTextColor}
-        onOpenChange={(open) => {
-          if (open) saveSelection();
-          setOpenTextColor(open);
-        }}
-      >
-        <PopoverTrigger asChild>
-          <Button variant="outline" onMouseDown={saveSelection}>
-            A<span style={{ color: textColor }}>■</span>
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent
-          side="bottom"
-          className="z-[9999] w-auto p-0"
-          onOpenAutoFocus={(e) => e.preventDefault()}
-          onMouseDown={(e) => e.stopPropagation()}
+    <div className="flex items-center justify-between px-4 py-2 border-b border-gray-300 dark:border-gray-400 bg-background text-foreground">
+      {/* Normal toolbar */}
+      <div className="hidden md:flex flex-wrap items-center gap-2">
+        {/* Font Family */}
+        <Select
+          onOpenChange={(open) => open && saveSelection()}
+          onValueChange={(v) => {
+            restoreSelection();
+            exec("fontName", v);
+          }}
         >
-          <ColorPicker
-            color={textColor}
-            defaultColor="#000"
-            onChange={(c) => {
-              setTextColor(c);
-              exec("foreColor", c);
-            }}
-          />
-        </PopoverContent>
-      </Popover>
+          <SelectTrigger className="w-[115px]">
+            <SelectValue placeholder="Police" />
+          </SelectTrigger>
+          <SelectContent>
+            {fonts.map((f) => (
+              <SelectItem key={f} value={f}>
+                {f}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-      {/* Highlight */}
-      <Popover
-        open={openHighlight}
-        onOpenChange={(open) => {
-          if (open) saveSelection();
-          setOpenHighlight(open);
-        }}
-      >
-        <PopoverTrigger asChild>
-          <Button variant="outline" onMouseDown={saveSelection}>
-            🖍
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent
-          side="bottom"
-          className="z-[9999] w-auto p-0"
-          onOpenAutoFocus={(e) => e.preventDefault()}
-          onMouseDown={(e) => e.stopPropagation()}
+        {/* Font Size */}
+        <Select
+          onOpenChange={(open) => open && saveSelection()}
+          onValueChange={(v) => {
+            restoreSelection();
+            exec("fontSize", v);
+          }}
         >
-          <ColorPicker
-            color={highlightColor}
-            defaultColor="transparent"
-            onChange={(c) => {
-              setHighlightColor(c);
-              exec("hiliteColor", c);
-            }}
-          />
-        </PopoverContent>
-      </Popover>
+          <SelectTrigger className="w-[105px]">
+            <SelectValue placeholder="Taille" />
+          </SelectTrigger>
+          <SelectContent>
+            {sizes.map((s) => (
+              <SelectItem key={s.value} value={s.value}>
+                {s.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Separator orientation="vertical" className="h-6" />
+
+        {/* Styles */}
+        {styleButton("bold", Bold)}
+        {styleButton("italic", Italic)}
+        {styleButton("underline", Underline)}
+        {styleButton("strikeThrough", Strikethrough)}
+
+        <Separator orientation="vertical" className="h-6" />
+
+        {/* Alignments */}
+        {styleButton("justifyLeft", AlignLeft)}
+        {styleButton("justifyCenter", AlignCenter)}
+        {styleButton("justifyRight", AlignRight)}
+        {styleButton("justifyFull", AlignJustify)}
+
+        <Separator orientation="vertical" className="h-6" />
+
+        {/* Text Color */}
+        <Popover open={openTextColor} onOpenChange={setOpenTextColor}>
+          <PopoverTrigger asChild>
+            <Button variant="outline" onMouseDown={saveSelection}>
+              A<span style={{ color: textColor }}>■</span>
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent
+            side="bottom"
+            className="z-[9999] w-auto p-0"
+            onOpenAutoFocus={(e) => e.preventDefault()}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <ColorPicker
+              color={textColor}
+              defaultColor="#000"
+              onChange={(c) => {
+                setTextColor(c);
+                exec("foreColor", c);
+              }}
+            />
+          </PopoverContent>
+        </Popover>
+
+        {/* Highlight */}
+        <Popover open={openHighlight} onOpenChange={setOpenHighlight}>
+          <PopoverTrigger asChild>
+            <Button variant="outline" onMouseDown={saveSelection}>
+              🖍
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent
+            side="bottom"
+            className="z-[9999] w-auto p-0"
+            onOpenAutoFocus={(e) => e.preventDefault()}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <ColorPicker
+              color={highlightColor}
+              defaultColor="transparent"
+              onChange={(c) => {
+                setHighlightColor(c);
+                exec("hiliteColor", c);
+              }}
+            />
+          </PopoverContent>
+        </Popover>
+      </div>
+
+      {/* Mobile menu */}
+      <div className="md:hidden">
+        <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="icon">
+              <Menu className="w-5 h-5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="max-w-[300px] max-h-[80vh] overflow-y-auto">
+            {/* Font Family */}
+            <DropdownMenuItem disabled>Police</DropdownMenuItem>
+            {fonts.map((f) => (
+              <DropdownMenuItem
+                key={f}
+                onSelect={() => {
+                  restoreSelection();
+                  exec("fontName", f);
+                }}
+              >
+                {f}
+              </DropdownMenuItem>
+            ))}
+
+            <DropdownMenuItem disabled>Taille</DropdownMenuItem>
+            {sizes.map((s) => (
+              <DropdownMenuItem
+                key={s.value}
+                onSelect={() => {
+                  restoreSelection();
+                  exec("fontSize", s.value);
+                }}
+              >
+                {s.label}
+              </DropdownMenuItem>
+            ))}
+
+            <DropdownMenuItem onSelect={() => exec("bold")}>Gras</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => exec("italic")}>Italique</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => exec("underline")}>Souligné</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => exec("strikeThrough")}>Barré</DropdownMenuItem>
+
+            <DropdownMenuItem onSelect={() => exec("justifyLeft")}>Aligné gauche</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => exec("justifyCenter")}>Centré</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => exec("justifyRight")}>Aligné droite</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => exec("justifyFull")}>Justifié</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </div>
   );
 }
