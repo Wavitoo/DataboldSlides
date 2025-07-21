@@ -318,8 +318,6 @@ export default function SlideContent({ slide, index, empty, onUpdateSlide }) {
     });
 
     setElements(updated);
-    resizeRef.current.startX = e.clientX;
-    resizeRef.current.startY = e.clientY;
   };
 
   const stopResize = () => {
