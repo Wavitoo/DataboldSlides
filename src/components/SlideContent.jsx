@@ -8,6 +8,7 @@ export default function SlideContent({ slide, index, empty, onUpdateSlide }) {
   const textareaRef = useRef(null);
   const currentElementsRef = useRef([]);
   const copiedElementRef = useRef(null);
+  const elementRefs = useRef({});
 
   const [elements, setElements] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
@@ -252,8 +253,10 @@ export default function SlideContent({ slide, index, empty, onUpdateSlide }) {
       const next = prev.map((el) => {
         if (el.id !== id) return el;
 
+        const realHeight = elementRefs.current[id]?.getBoundingClientRect().height || el.height || 0;
+        
         const newX = Math.min(Math.max(0, initialX + dx), canvasRect.width - el.width);
-        const newY = Math.min(Math.max(0, initialY + dy), canvasRect.height - el.height);
+        const newY = Math.min(Math.max(0, initialY + dy), canvasRect.height - realHeight);
 
         return { ...el, x: newX, y: newY };
       });
@@ -351,6 +354,9 @@ export default function SlideContent({ slide, index, empty, onUpdateSlide }) {
         {elements.map((el) => (
           <div
             key={el.id}
+            ref={(elRef) => {
+              if (elRef) elementRefs.current[el.id] = elRef;
+            }}
             onMouseDown={(e) => {
               if (editingId !== el.id) {
                 startDrag(e, el.id);
