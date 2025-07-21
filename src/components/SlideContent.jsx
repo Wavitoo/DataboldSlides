@@ -5,6 +5,7 @@ export default function SlideContent({ slide, index, empty }) {
   const canvasRef = useRef(null);
   const dragRef = useRef(null);
   const resizeRef = useRef(null);
+  const textareaRef = useRef(null);
 
   const [elements, setElements] = useState([
     {
@@ -143,13 +144,6 @@ export default function SlideContent({ slide, index, empty }) {
         }
       }
 
-      if (e.ctrlKey && key === "a") {
-        e.preventDefault();
-        setSelectedId(null);
-        setEditingId(null);
-        setEditingContent("");
-      }
-
       if (key === "escape") {
         if (editingId !== null) {
           setEditingId(null);
@@ -168,6 +162,17 @@ export default function SlideContent({ slide, index, empty }) {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [elements, selectedId, copiedElement, history, redoStack, editingId]);
+
+  useEffect(() => {
+    if (editingId !== null && textareaRef.current) {
+      const el = textareaRef.current;
+      requestAnimationFrame(() => {
+        el.focus();
+        el.setSelectionRange(el.value.length, el.value.length);
+      });
+    }
+  }, [editingId]);
+
 
   const startDrag = (e, id) => {
     if (editingId || resizeRef.current) return;
@@ -354,6 +359,7 @@ export default function SlideContent({ slide, index, empty }) {
           >
             {editingId === el.id ? (
               <textarea
+              ref={textareaRef}
                 autoFocus
                 value={editingContent}
                 onChange={(e) => setEditingContent(e.target.value)}
