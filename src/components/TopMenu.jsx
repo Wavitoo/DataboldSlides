@@ -47,14 +47,6 @@ export default function TopMenu({
       ],
     },
     {
-      label: "Insertion",
-      children: [
-        { label: "Image", action: () => alert("Insérer image") },
-        { label: "Forme", action: () => alert("Insérer forme") },
-        { label: "Zone de texte", action: () => alert("Zone de texte") },
-      ],
-    },
-    {
       label: "Affichage",
       children: [
         {
@@ -70,9 +62,9 @@ export default function TopMenu({
   ];
 
   return (
-    <div className="w-full border-b border-gray-300 dark:border-gray-400 bg-background text-foreground px-4 py-2 flex items-center justify-between">
+    <div className="w-full border-b border-gray-300 dark:border-gray-400 bg-background text-foreground px-4 py-4 flex items-center justify-between">
       {/* Large screen menu */}
-      <div className="hidden md:flex gap-2 flex-wrap overflow-x-auto scrollbar-none">
+      <div className="hidden md:flex gap-2 flex-wrap overflow-x-auto scrollbar-none py-1 px-1">
         {items.map((group) => (
           <DropdownMenu key={group.label}>
             <DropdownMenuTrigger asChild>
