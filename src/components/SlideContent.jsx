@@ -49,7 +49,7 @@ export default function SlideContent({ slide, index, empty, onUpdateSlide }) {
         },
       ]);
     }
-  }, [slide?.id]); // ✅ on ne réagit qu'à un changement de slide (pas de contenu)
+  }, [slide?.id]);
 
 
   useEffect(() => {
