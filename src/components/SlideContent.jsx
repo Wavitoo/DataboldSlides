@@ -77,6 +77,88 @@ export default function SlideContent({ slide, index, empty }) {
         setCopiedElement(null);
       }
 
+      if (e.ctrlKey && key === "d" && selectedId && editingId === null) {
+        e.preventDefault();
+        const found = elements.find((el) => el.id === selectedId);
+        if (found) {
+          const newEl = {
+            ...found,
+            id: Date.now().toString(),
+            x: found.x + 30,
+            y: found.y + 30,
+          };
+          pushHistory([...elements, newEl]);
+          setSelectedId(newEl.id);
+        }
+      }
+
+      if (e.ctrlKey && key === "x" && selectedId && editingId === null) {
+        e.preventDefault();
+        const found = elements.find((el) => el.id === selectedId);
+        if (found) {
+          setCopiedElement({ ...found, id: Date.now().toString(), x: found.x + 20, y: found.y + 20 });
+          pushHistory(elements.filter((el) => el.id !== selectedId));
+          setSelectedId(null);
+        }
+      }
+
+      if (!editingId && selectedId) {
+        const offset = e.shiftKey ? 10 : 1;
+        const moveElement = (dx, dy) => {
+          setElements((prev) =>
+            prev.map((el) =>
+              el.id === selectedId
+                ? { ...el, x: el.x + dx, y: el.y + dy }
+                : el
+            )
+          );
+        };
+
+        switch (e.key) {
+          case "ArrowUp":
+            e.preventDefault();
+            moveElement(0, -offset);
+            break;
+          case "ArrowDown":
+            e.preventDefault();
+            moveElement(0, offset);
+            break;
+          case "ArrowLeft":
+            e.preventDefault();
+            moveElement(-offset, 0);
+            break;
+          case "ArrowRight":
+            e.preventDefault();
+            moveElement(offset, 0);
+            break;
+        }
+      }
+
+      if (key === "enter" && selectedId && editingId === null) {
+        e.preventDefault();
+        const el = elements.find((el) => el.id === selectedId);
+        if (el) {
+          setEditingId(el.id);
+          setEditingContent(el.content);
+        }
+      }
+
+      if (e.ctrlKey && key === "a") {
+        e.preventDefault();
+        setSelectedId(null);
+        setEditingId(null);
+        setEditingContent("");
+      }
+
+      if (key === "escape") {
+        if (editingId !== null) {
+          setEditingId(null);
+          setEditingContent("");
+        } else if (selectedId !== null) {
+          setSelectedId(null);
+        }
+      }
+
       if ((key === "backspace" || key === "delete") && selectedId && editingId === null) {
         pushHistory(elements.filter((el) => el.id !== selectedId));
         setSelectedId(null);
