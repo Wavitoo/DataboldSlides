@@ -17,6 +17,12 @@ export default function SlideContent({ slide, index, empty, onUpdateSlide }) {
   const [redoStack, setRedoStack] = useState([]);
 
   useEffect(() => {
+    setSelectedId(null);
+    setEditingId(null);
+    setEditingContent("");
+    setHistory([]);
+    setRedoStack([]);
+
     if (slide?.elements) {
       setElements(slide.elements);
     } else {
@@ -43,13 +49,8 @@ export default function SlideContent({ slide, index, empty, onUpdateSlide }) {
         },
       ]);
     }
+  }, [slide?.id]); // ✅ on ne réagit qu'à un changement de slide (pas de contenu)
 
-    setSelectedId(null);
-    setEditingId(null);
-    setEditingContent("");
-    setHistory([]);
-    setRedoStack([]);
-  }, [slide]);
 
   useEffect(() => {
     if (editingId && textareaRef.current) {
