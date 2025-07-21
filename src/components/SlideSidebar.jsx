@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   DndContext,
   closestCenter,
@@ -8,66 +9,11 @@ import {
 import {
   arrayMove,
   SortableContext,
-  useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 
-import { CSS } from "@dnd-kit/utilities";
-
-import SlidePreview from "./SlidePreview";
 import SlideToolbar from "./SlideToolbar";
-
-function SortableSlide({ slide, index, active, onClick, id }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-  } = useSortable({ id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
-
-  const handleMouseDown = (e) => {
-    if (e.detail === 1) {
-      let moved = false;
-
-      const handleMove = () => {
-        moved = true;
-        window.removeEventListener("mousemove", handleMove);
-      };
-
-      window.addEventListener("mousemove", handleMove);
-
-      setTimeout(() => {
-        window.removeEventListener("mousemove", handleMove);
-        if (!moved) {
-          onClick();
-        }
-      }, 100);
-    }
-  };
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-      onMouseDown={handleMouseDown}
-    >
-      <SlidePreview
-        slide={slide}
-        index={index}
-        active={active}
-        onClick={() => {}}
-      />
-    </div>
-  );
-}
+import SortableSlide from "./SortableSlide";
 
 export default function SlideSidebar({
   slides,
@@ -80,6 +26,7 @@ export default function SlideSidebar({
   setSlides,
 }) {
   const sensors = useSensors(useSensor(PointerSensor));
+  const [clipboard, setClipboard] = useState(null);
 
   const handleDragEnd = (event) => {
     const { active, over } = event;
@@ -98,7 +45,10 @@ export default function SlideSidebar({
   };
 
   return (
-    <div id="slide-sidebar"className="flex flex-col items-center gap-4 pr-2 max-h-full text-foreground">
+    <div
+      id="slide-sidebar"
+      className="flex flex-col items-center gap-4 pr-2 max-h-full text-foreground"
+    >
       <SlideToolbar
         onAdd={onAdd}
         onDelete={onDelete}
@@ -125,10 +75,14 @@ export default function SlideSidebar({
                 {slides.map((slide, i) => (
                   <SortableSlide
                     key={slide.id}
-                    id={slide.id}
                     slide={slide}
                     index={i}
                     active={i === activeIndex}
+                    clipboard={clipboard}
+                    setClipboard={setClipboard}
+                    slides={slides}
+                    setSlides={setSlides}
+                    setActiveIndex={setActiveIndex}
                     onClick={() => setActiveIndex(i)}
                   />
                 ))}
