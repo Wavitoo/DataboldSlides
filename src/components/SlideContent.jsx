@@ -7,12 +7,12 @@ export default function SlideContent({ slide, index, empty, onUpdateSlide }) {
   const resizeRef = useRef(null);
   const textareaRef = useRef(null);
   const currentElementsRef = useRef([]);
+  const copiedElementRef = useRef(null);
 
   const [elements, setElements] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [editingContent, setEditingContent] = useState("");
-  const [copiedElement, setCopiedElement] = useState(null);
   const [history, setHistory] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
 
@@ -86,46 +86,61 @@ export default function SlideContent({ slide, index, empty, onUpdateSlide }) {
       if (e.ctrlKey && key === "c" && selectedId && !editingId) {
         const found = elements.find((el) => el.id === selectedId);
         if (found) {
-          setCopiedElement({ ...found, id: Date.now().toString(), x: found.x + 20, y: found.y + 20 });
+          copiedElementRef.current = { 
+            ...found, 
+            id: Date.now().toString(), 
+            x: found.x + 20, 
+            y: found.y + 20 
+          };
         }
       }
 
-      if (e.ctrlKey && key === "v" && copiedElement && !editingId) {
-        const newElements = [...elements, copiedElement];
+      if (e.ctrlKey && key === "v" && copiedElementRef.current && !editingId) {
+        e.preventDefault();
+        const pasted = { 
+          ...copiedElementRef.current, 
+          id: Date.now().toString(), 
+          x: copiedElementRef.current.x + 10, 
+          y: copiedElementRef.current.y + 10 
+        };
+
+        const newElements = [...elements, pasted];
         pushHistory(newElements);
-        setSelectedId(copiedElement.id);
-        setCopiedElement(null);
+        setSelectedId(pasted.id);
         onUpdateSlide?.({ elements: newElements });
       }
+
 
       if (e.ctrlKey && key === "d" && selectedId && !editingId) {
         e.preventDefault();
         const found = elements.find((el) => el.id === selectedId);
         if (found) {
-          const newEl = {
+          const duplicated = {
             ...found,
             id: Date.now().toString(),
             x: found.x + 30,
             y: found.y + 30,
           };
-          const newElements = [...elements, newEl];
+          const newElements = [...elements, duplicated];
           pushHistory(newElements);
-          setSelectedId(newEl.id);
+          setSelectedId(duplicated.id);
           onUpdateSlide?.({ elements: newElements });
         }
       }
+
 
       if (e.ctrlKey && key === "x" && selectedId && !editingId) {
         e.preventDefault();
         const found = elements.find((el) => el.id === selectedId);
         if (found) {
-          setCopiedElement({ ...found, id: Date.now().toString(), x: found.x + 20, y: found.y + 20 });
+          copiedElementRef.current = { ...found };
           const filtered = elements.filter((el) => el.id !== selectedId);
           pushHistory(filtered);
           setSelectedId(null);
           onUpdateSlide?.({ elements: filtered });
         }
       }
+
 
       if (!editingId && selectedId) {
         const offset = e.shiftKey ? 10 : 1;
@@ -184,7 +199,7 @@ export default function SlideContent({ slide, index, empty, onUpdateSlide }) {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [elements, selectedId, copiedElement, history, redoStack, editingId]);
+  }, [elements, selectedId, copiedElementRef, history, redoStack, editingId]);
 
   const pushHistory = (newState) => {
     setHistory((prev) => [...prev, elements]);
