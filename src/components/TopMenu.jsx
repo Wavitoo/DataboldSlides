@@ -12,8 +12,8 @@ import { Menu } from "lucide-react";
 
 export default function TopMenu({
   onNew,
-  onSave,
-  onExport,
+  onExportJSON,
+  onImport,
   onAddSlide,
   onDeleteSlide,
   onDuplicateSlide,
@@ -33,8 +33,8 @@ export default function TopMenu({
       label: "Fichier",
       children: [
         { label: "Nouveau", action: onNew },
-        { label: "Enregistrer", action: onSave },
-        { label: "Exporter (JSON)", action: onExport },
+        { label: "Importer", action: onImport },
+        { label: "Exporter (JSON)", action: onExportJSON },
         { label: "Exporter en PDF", action: onExportPDF },
       ],
     },
