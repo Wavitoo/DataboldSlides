@@ -401,9 +401,20 @@ export default function SlideContent({ slide, index, empty, onUpdateSlide }) {
               <div
                 className={`w-full h-full bg-transparent text-foreground ${el.style}`}
                 style={{ fontSize: el.fontSize, whiteSpace: "pre-wrap", wordBreak: "break-word" }}
-                onDoubleClick={() => {
-                  setEditingId(el.id);
-                  setEditingContent(el.content);
+                contentEditable={selectedId === el.id && !editingId}
+                suppressContentEditableWarning
+                onInput={(e) => {
+                  const updatedContent = e.currentTarget.innerText;
+                  const updated = elements.map((elem) =>
+                    elem.id === el.id ? { ...elem, content: updatedContent } : elem
+                  );
+                  setElements(updated);
+                  onUpdateSlide?.({ elements: updated });
+                }}
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedId(el.id);
                 }}
               >
                 {el.content}
