@@ -97,22 +97,51 @@ export default function SlideEditor() {
     }
   };
 
-  const handleSave = () => {
-    const data = JSON.stringify(slides, null, 2);
-    localStorage.setItem("slides", data);
-    alert("Présentation enregistrée localement.");
+  const handleExportJSON = () => {
+    try {
+      const data = JSON.stringify(slides, null, 2);
+      const blob = new Blob([data], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "presentation.json";
+      a.click();
+
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert("Erreur lors de l'exportation.");
+    }
   };
 
-  const handleExport = () => {
-    const data = JSON.stringify(slides, null, 2);
-    const blob = new Blob([data], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "presentation.json";
-    a.click();
-    URL.revokeObjectURL(url);
+  const handleImport = async () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "application/json";
+
+    input.onchange = async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      try {
+        const text = await file.text();
+        const importedSlides = JSON.parse(text);
+
+        if (!Array.isArray(importedSlides)) {
+          alert("Fichier invalide.");
+          return;
+        }
+
+        setSlides(importedSlides);
+        setActiveIndex(0);
+      } catch (error) {
+        alert("Échec de l'importation.");
+      }
+    };
+
+    input.click();
   };
+
 
 
   const handleDuplicate = () => {
@@ -140,15 +169,16 @@ export default function SlideEditor() {
     <div className="flex flex-col h-full w-full">
       <TopMenu
         onNew={handleNew}
-        onSave={handleSave}
+        onImport={handleImport}
+        onExportJSON={handleExportJSON}
         onExportPDF={handleExportPDF}
-        onExport={handleExport}
         onAddSlide={handleAdd}
         onDeleteSlide={handleDelete}
         onDuplicateSlide={handleDuplicate}
         onToggleSidebar={() => setShowSidebar((prev) => !prev)}
         showSidebar={showSidebar}
       />
+
       <Toolbar />
 
       <div className="flex-1 flex items-center justify-center p-4">
