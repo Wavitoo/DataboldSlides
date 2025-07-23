@@ -22,8 +22,8 @@ export default function SlidePreview({ slide, index, active, onClick }) {
         },
       ];
   
-  const canvasWidth = 1280;
-  const canvasHeight = 720;
+  const canvasWidth = 1920;
+  const canvasHeight = 1080;
   const previewWidth = 176;
   const previewHeight = previewWidth * (canvasHeight / canvasWidth);
   const baseScale = Math.min(previewWidth / canvasWidth, previewHeight / canvasHeight);
