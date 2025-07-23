@@ -1,7 +1,7 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { GripHorizontal, MoveHorizontal } from "lucide-react";
 
-export default function SlideContent({ slide, index, empty, onUpdateSlide }) {
+const SlideContent = forwardRef(({ slide, index, empty, onUpdateSlide, isExporting }, ref) => {
   const canvasRef = useRef(null);
   const dragRef = useRef(null);
   const resizeRef = useRef(null);
@@ -428,6 +428,10 @@ export default function SlideContent({ slide, index, empty, onUpdateSlide }) {
     handleEditConfirm();
   };
 
+  useImperativeHandle(ref, () => ({
+    deselectAll: () => setSelectedId(null),
+  }));
+
   if (empty) {
     return (
       <div className="flex-1 border-2 border-blue-500 rounded-sm p-6 bg-muted flex items-center justify-center text-muted-foreground text-lg">
@@ -493,8 +497,17 @@ export default function SlideContent({ slide, index, empty, onUpdateSlide }) {
                   }
                 }}
                 onMouseDown={(e) => e.stopPropagation()}
-                className={`w-full bg-transparent outline-none resize-none ${el.style}`}
-                style={{ fontSize: el.fontSize, whiteSpace: "pre-wrap", wordBreak: "break-word" }}
+                className={`w-full bg-transparent outline-none focus:outline-none border-none focus:border-none shadow-none focus:shadow-none resize-none ${el.style}`}
+                style={{
+                  fontSize: el.fontSize,
+                  whiteSpace: "pre-wrap",
+                  wordBreak: "break-word",
+                  outline: "none",
+                  border: "none",
+                  boxShadow: "none",
+                  WebkitBoxShadow: "none",
+                  MozBoxShadow: "none"
+                }}
               />
             ) : (
               el.type === "image" ? (
@@ -564,8 +577,12 @@ export default function SlideContent({ slide, index, empty, onUpdateSlide }) {
             )}
           </div>
         ))}
-        <span className="absolute bottom-2 right-4 text-sm text-muted-foreground">{index + 1}</span>
+        {!isExporting && (
+          <span className="absolute bottom-2 right-4 text-sm text-muted-foreground">{index + 1}</span>
+        )}
       </div>
     </div>
   );
-}
+});
+
+export default SlideContent;
