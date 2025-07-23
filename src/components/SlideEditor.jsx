@@ -18,9 +18,11 @@ export default function SlideEditor() {
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [showSidebar, setShowSidebar] = useState(true);
+  const [isExportingPDF, setIsExportingPDF] = useState(false);
 
   const addButtonRef = useRef(null);
   const deleteButtonRef = useRef(null);
+  const slideContentRef = useRef();
 
   const handleAdd = () => {
     const newSlide = {
@@ -53,40 +55,57 @@ export default function SlideEditor() {
   };
 
   const handleExportPDF = async () => {
+    setIsExportingPDF(true);
     const originalIndex = activeIndex;
-    const pdf = new jsPDF({ unit: "px", format: "a4" });
+    slideContentRef.current?.deselectAll();
 
-    setShowSidebar(false);
-
+    const BG_COLOR = "#f4f4f5";
+    let pdf = null;
+    let firstWidth = null;
+    let firstHeight = null;
     for (let i = 0; i < slides.length; i++) {
       setActiveIndex(i);
-      await new Promise((res) => setTimeout(res, 300));
+      await new Promise((res) => setTimeout(res, 400));
 
-      const node = document.querySelector("#slide-content");
-      if (!node) continue;
+      const exportNode = document.querySelector("#slide-content");
+      if (!exportNode) continue;
 
-      const dataUrl = await domtoimage.toPng(node, {
-        width: 1280,
-        height: 720,
+      const rect = exportNode.getBoundingClientRect();
+      const CANVAS_WIDTH = Math.round(rect.width);
+      const CANVAS_HEIGHT = Math.round(rect.height);
+
+      const prevWidth = exportNode.style.width;
+      const prevHeight = exportNode.style.height;
+
+      exportNode.style.width = CANVAS_WIDTH + "px";
+      exportNode.style.height = CANVAS_HEIGHT + "px";
+
+      if (i === 0) {
+        pdf = new jsPDF({ unit: "px", format: [CANVAS_WIDTH, CANVAS_HEIGHT], orientation: "landscape" });
+        firstWidth = CANVAS_WIDTH;
+        firstHeight = CANVAS_HEIGHT;
+      } else {
+        pdf.addPage([CANVAS_WIDTH, CANVAS_HEIGHT], "landscape");
+      }
+
+      const dataUrl = await domtoimage.toPng(exportNode, {
+        width: CANVAS_WIDTH,
+        height: CANVAS_HEIGHT,
         style: {
+          backgroundColor: BG_COLOR,
           transform: "scale(1)",
           transformOrigin: "top left",
-          backgroundColor: "#fff",
         },
       });
 
-      const imgProps = pdf.getImageProperties(dataUrl);
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = (imgProps.height * pageWidth) / imgProps.width;
+      exportNode.style.width = prevWidth;
+      exportNode.style.height = prevHeight;
 
-      if (i > 0) pdf.addPage();
-      pdf.addImage(dataUrl, "PNG", 0, 0, pageWidth, pageHeight);
+      pdf.addImage(dataUrl, "PNG", 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     }
-
     setActiveIndex(originalIndex);
-    setShowSidebar(true);
-
-    pdf.save("presentation.pdf");
+    setIsExportingPDF(false);
+    if (pdf) pdf.save("presentation.pdf");
   };
 
   const handleNew = () => {
@@ -182,7 +201,7 @@ export default function SlideEditor() {
       <Toolbar />
 
       <div className="flex-1 flex items-center justify-center p-4">
-        <div className="aspect-video w-full max-w-[1200px] border border-foreground rounded-md flex p-6 gap-12 bg-background">
+        <div className="aspect-video w-full max-w-[1920px] border border-foreground rounded-md flex p-6 gap-12 bg-background">
           {showSidebar && (
             <SlideSidebar
               slides={slides}
@@ -196,12 +215,14 @@ export default function SlideEditor() {
             />
           )}
           <SlideContent
+            ref={slideContentRef}
             slide={slides[activeIndex]}
             index={activeIndex}
             onTitleChange={handleTitleChange}
             onBodyChange={handleBodyChange}
             onUpdateSlide={handleUpdateSlide}
             empty={slides.length === 0}
+            isExporting={isExportingPDF}
           />
         </div>
       </div>
