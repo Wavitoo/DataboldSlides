@@ -22,6 +22,13 @@ export default function SlidePreview({ slide, index, active, onClick }) {
         },
       ];
   
+  const canvasWidth = 1280;
+  const canvasHeight = 720;
+  const previewWidth = 176;
+  const previewHeight = previewWidth * (canvasHeight / canvasWidth);
+  const baseScale = Math.min(previewWidth / canvasWidth, previewHeight / canvasHeight);
+  const scale = baseScale * 1.2;
+
   return (
     <div className="p-1 box-border">
       <div
@@ -31,31 +38,60 @@ export default function SlidePreview({ slide, index, active, onClick }) {
         overflow-hidden`}
         style={{
           boxSizing: "border-box",
+          width: previewWidth,
+          height: previewHeight,
+          position: "relative",
         }}
       >
-        <div className="relative w-full h-full">
+        <div
+          style={{
+            width: canvasWidth,
+            height: canvasHeight,
+            transform: `scale(${scale})`,
+            transformOrigin: "top left",
+            position: "absolute",
+            left: 0,
+            top: 0,
+            pointerEvents: "none",
+          }}
+        >
           {elements.map((el) => (
             <div
               key={el.id}
               style={{
                 position: "absolute",
-                left: el.x * 0.25,
-                top: el.y * 0.25,
-                width: el.width * 0.25,
-                fontSize: el.fontSize * 0.25,
+                left: el.x,
+                top: el.y,
+                width: el.width,
+                fontSize: el.fontSize,
+                height: el.height,
                 padding: 2,
                 whiteSpace: "pre-wrap",
                 wordBreak: "break-word",
               }}
               className={`text-foreground ${el.style}`}
             >
-              {el.content}
+              {el.type === "image" ? (
+                <img
+                  src={el.src}
+                  alt=""
+                  style={{
+                    width: "100%",
+                    height: el.height,
+                    objectFit: "contain",
+                    display: "block",
+                  }}
+                  draggable={false}
+                />
+              ) : (
+                el.content
+              )}
             </div>
           ))}
-          <span className="absolute bottom-1 right-2 text-[10px] text-muted-foreground">
-            {index + 1}
-          </span>
         </div>
+        <span className="absolute bottom-1 right-2 text-[10px] text-muted-foreground">
+          {index + 1}
+        </span>
       </div>
     </div>
   );
