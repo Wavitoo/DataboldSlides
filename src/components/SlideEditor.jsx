@@ -201,7 +201,7 @@ export default function SlideEditor() {
       <Toolbar />
 
       <div className="flex-1 flex items-center justify-center p-4">
-        <div className="aspect-video w-full max-w-[1920px] border border-foreground rounded-md flex p-6 gap-12 bg-background">
+        <div className="aspect-video w-full max-w-[1280px] border border-foreground rounded-md flex p-6 gap-12 bg-background">
           {showSidebar && (
             <SlideSidebar
               slides={slides}
