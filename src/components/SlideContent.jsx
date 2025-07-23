@@ -52,16 +52,24 @@ export default function SlideContent({ slide, index, empty, onUpdateSlide }) {
     }
   }, [slide?.id]);
 
-
+  const prevEditingId = useRef(null);
+  const cursorPosRef = useRef(null);
   useEffect(() => {
-    if (editingId && textareaRef.current) {
+    if (editingId && editingId !== prevEditingId.current && textareaRef.current) {
       const el = textareaRef.current;
       requestAnimationFrame(() => {
         el.focus();
         el.setSelectionRange(el.value.length, el.value.length);
       });
     }
+    prevEditingId.current = editingId;
   }, [editingId]);
+
+  useEffect(() => {
+    if (textareaRef.current && cursorPosRef.current !== null) {
+      textareaRef.current.setSelectionRange(cursorPosRef.current, cursorPosRef.current);
+    }
+  }, [editingContent]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -470,12 +478,18 @@ export default function SlideContent({ slide, index, empty, onUpdateSlide }) {
               <textarea
                 ref={textareaRef}
                 value={editingContent}
-                onChange={(e) => setEditingContent(e.target.value)}
+                onChange={(e) => {
+                  cursorPosRef.current = e.target.selectionStart;
+                  setEditingContent(e.target.value);
+                }}
                 onBlur={handleEditConfirm}
                 onKeyDown={(e) => {
                   if (e.key === "Escape") {
                     setEditingId(null);
                     setEditingContent("");
+                  } else if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleEditConfirm();
                   }
                 }}
                 onMouseDown={(e) => e.stopPropagation()}
@@ -514,6 +528,11 @@ export default function SlideContent({ slide, index, empty, onUpdateSlide }) {
                   onClick={(e) => {
                     e.stopPropagation();
                     setSelectedId(el.id);
+                  }}
+                  onDoubleClick={(e) => {
+                    e.stopPropagation();
+                    setEditingId(el.id);
+                    setEditingContent(el.content);
                   }}
                 >
                   {el.content}
