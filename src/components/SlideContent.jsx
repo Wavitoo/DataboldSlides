@@ -203,6 +203,91 @@ export default function SlideContent({ slide, index, empty, onUpdateSlide }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [elements, selectedId, copiedElementRef, history, redoStack, editingId]);
 
+  useEffect(() => {
+    const handlePaste = async (e) => {
+      if (e.clipboardData.files && e.clipboardData.files.length > 0) {
+        const file = e.clipboardData.files[0];
+        if (file.type.startsWith("image/")) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const src = event.target.result;
+            const newImage = {
+              id: Date.now().toString(),
+              type: "image",
+              src,
+              x: 100,
+              y: 100,
+              width: 300,
+              height: 200,
+            };
+            const newElements = [...elements, newImage];
+            pushHistory(newElements);
+            setSelectedId(newImage.id);
+            onUpdateSlide?.({ elements: newElements });
+          };
+          reader.readAsDataURL(file);
+          e.preventDefault();
+          return;
+        }
+      }
+
+      const html = e.clipboardData.getData("text/html");
+      if (html) {
+        const match = html.match(/<img[^>]+src=["']([^"'>]+)["']/i);
+        if (match && match[1]) {
+          const src = match[1];
+          const newImage = {
+            id: Date.now().toString(),
+            type: "image",
+            src,
+            x: 100,
+            y: 100,
+            width: 300,
+            height: 200,
+          };
+          const newElements = [...elements, newImage];
+          pushHistory(newElements);
+          setSelectedId(newImage.id);
+          onUpdateSlide?.({ elements: newElements });
+          e.preventDefault();
+          return;
+        }
+      }
+      const text = e.clipboardData.getData("text/plain");
+      if (text && (text.startsWith("http://") || text.startsWith("https://")) && /\.(png|jpe?g|gif|webp|svg)$/i.test(text)) {
+        const src = text;
+        const newImage = {
+          id: Date.now().toString(),
+          type: "image",
+          src,
+          x: 100,
+          y: 100,
+          width: 300,
+          height: 200,
+        };
+        const newElements = [...elements, newImage];
+        pushHistory(newElements);
+        setSelectedId(newImage.id);
+        onUpdateSlide?.({ elements: newElements });
+        e.preventDefault();
+        return;
+      }
+    };
+    const canvas = canvasRef.current;
+    if (canvas) {
+      canvas.addEventListener("paste", handlePaste);
+    } else {
+      window.addEventListener("paste", handlePaste);
+    }
+    return () => {
+      if (canvas) {
+        canvas.removeEventListener("paste", handlePaste);
+      } else {
+        window.removeEventListener("paste", handlePaste);
+      }
+    };
+  }, [elements, onUpdateSlide]);
+
   const pushHistory = (newState) => {
     setHistory((prev) => [...prev, elements]);
     setRedoStack([]);
@@ -398,27 +483,42 @@ export default function SlideContent({ slide, index, empty, onUpdateSlide }) {
                 style={{ fontSize: el.fontSize, whiteSpace: "pre-wrap", wordBreak: "break-word" }}
               />
             ) : (
-              <div
-                className={`w-full h-full bg-transparent text-foreground ${el.style}`}
-                style={{ fontSize: el.fontSize, whiteSpace: "pre-wrap", wordBreak: "break-word" }}
-                contentEditable={selectedId === el.id && !editingId}
-                suppressContentEditableWarning
-                onInput={(e) => {
-                  const updatedContent = e.currentTarget.innerText;
-                  const updated = elements.map((elem) =>
-                    elem.id === el.id ? { ...elem, content: updatedContent } : elem
-                  );
-                  setElements(updated);
-                  onUpdateSlide?.({ elements: updated });
-                }}
-                onMouseDown={(e) => e.stopPropagation()}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSelectedId(el.id);
-                }}
-              >
-                {el.content}
-              </div>
+              el.type === "image" ? (
+                <img
+                  src={el.src}
+                  alt=""
+                  style={{
+                    width: el.width,
+                    height: el.height,
+                    objectFit: "contain",
+                    pointerEvents: "none",
+                    userSelect: "none",
+                  }}
+                  draggable={false}
+                />
+              ) : (
+                <div
+                  className={`w-full h-full bg-transparent text-foreground ${el.style}`}
+                  style={{ fontSize: el.fontSize, whiteSpace: "pre-wrap", wordBreak: "break-word" }}
+                  contentEditable={selectedId === el.id && !editingId}
+                  suppressContentEditableWarning
+                  onInput={(e) => {
+                    const updatedContent = e.currentTarget.innerText;
+                    const updated = elements.map((elem) =>
+                      elem.id === el.id ? { ...elem, content: updatedContent } : elem
+                    );
+                    setElements(updated);
+                    onUpdateSlide?.({ elements: updated });
+                  }}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedId(el.id);
+                  }}
+                >
+                  {el.content}
+                </div>
+              )
             )}
 
             {selectedId === el.id && (
