@@ -161,8 +161,6 @@ export default function SlideEditor() {
     input.click();
   };
 
-
-
   const handleDuplicate = () => {
     const current = slides[activeIndex];
     const duplicate = { ...current, id: Date.now() };
