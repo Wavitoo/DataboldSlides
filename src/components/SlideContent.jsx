@@ -156,22 +156,23 @@ const SlideContent = forwardRef(({ slide, index, empty, onUpdateSlide, isExporti
             el.id === selectedId ? { ...el, x: el.x + dx, y: el.y + dy } : el
           );
           setElements(updated);
+          onUpdateSlide?.({ elements: updated });
         };
 
         switch (e.key) {
-          case "arrowup":
+          case "ArrowUp":
             e.preventDefault();
             moveElement(0, -offset);
             break;
-          case "arrowdown":
+          case "ArrowDown":
             e.preventDefault();
             moveElement(0, offset);
             break;
-          case "arrowleft":
+          case "ArrowLeft":
             e.preventDefault();
             moveElement(-offset, 0);
             break;
-          case "arrowright":
+          case "ArrowRight":
             e.preventDefault();
             moveElement(offset, 0);
             break;
@@ -206,7 +207,7 @@ const SlideContent = forwardRef(({ slide, index, empty, onUpdateSlide, isExporti
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [elements, selectedId, copiedElementRef, history, redoStack, editingId]);
+  }, [elements, selectedId, copiedElementRef, history, redoStack, editingId, onUpdateSlide]);
 
   useEffect(() => {
     const handlePaste = async (e) => {
