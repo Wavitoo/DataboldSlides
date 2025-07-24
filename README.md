@@ -27,16 +27,16 @@
 
 ## Description
 
-**DataboldSlides** est un éditeur de présentations moderne et intuitif, développé avec React, Vite et TailwindCSS.  
-Il permet de créer, organiser et styliser des slides de façon professionnelle, avec une expérience utilisateur fluide et des fonctionnalités avancées (édition riche, glisser-déposer, export PDF, thèmes, etc.).
+**DataboldSlides** est un éditeur de présentations moderne et intuitif, développé avec React, Vite, TailwindCSS et Shadcn.  
+Il permet de créer, organiser et styliser des slides de façon professionnelle, avec une expérience utilisateur fluide et des fonctionnalités avancées (glisser-déposer, export PDF, thèmes, etc.).
 
 ---
 
 ## Démarrage rapide
 
 1. **Créer une nouvelle slide** via la barre latérale.
-2. **Double-cliquez** sur un texte pour l’éditer et utilisez la barre d’outils pour le styliser.
-3. **Collez une image** depuis le presse-papier ou faites un glisser-déposer.
+2. **Double-cliquez** sur un texte pour l’éditer.
+3. **Collez une image** depuis le presse-papier.
 4. **Exportez** votre présentation en PDF ou JSON via le menu du haut.
 
 ---
@@ -51,7 +51,6 @@ Il permet de créer, organiser et styliser des slides de façon professionnelle,
 
 ### Gestion des Éléments
 
-- **Édition riche du texte** : gras, italique, souligné, couleur, alignement, etc. via une barre d’outils.
 - **Insertion et collage d’images** directement depuis le presse-papier ou par glisser-déposer.
 - **Déplacement et redimensionnement** des éléments (texte, images) à la souris.
 - **Raccourcis clavier** :  
