@@ -120,7 +120,6 @@ const SlideContent = forwardRef(({ slide, index, empty, onUpdateSlide, isExporti
         onUpdateSlide?.({ elements: newElements });
       }
 
-
       if (e.ctrlKey && key === "d" && selectedId && !editingId) {
         e.preventDefault();
         const found = elements.find((el) => el.id === selectedId);
@@ -138,7 +137,6 @@ const SlideContent = forwardRef(({ slide, index, empty, onUpdateSlide, isExporti
         }
       }
 
-
       if (e.ctrlKey && key === "x" && selectedId && !editingId) {
         e.preventDefault();
         const found = elements.find((el) => el.id === selectedId);
@@ -150,7 +148,6 @@ const SlideContent = forwardRef(({ slide, index, empty, onUpdateSlide, isExporti
           onUpdateSlide?.({ elements: filtered });
         }
       }
-
 
       if (!editingId && selectedId) {
         const offset = e.shiftKey ? 10 : 1;
@@ -261,6 +258,7 @@ const SlideContent = forwardRef(({ slide, index, empty, onUpdateSlide, isExporti
           return;
         }
       }
+
       const text = e.clipboardData.getData("text/plain");
       if (text && (text.startsWith("http://") || text.startsWith("https://")) && /\.(png|jpe?g|gif|webp|svg)$/i.test(text)) {
         const src = text;
@@ -281,6 +279,7 @@ const SlideContent = forwardRef(({ slide, index, empty, onUpdateSlide, isExporti
         return;
       }
     };
+
     const canvas = canvasRef.current;
     if (canvas) {
       canvas.addEventListener("paste", handlePaste);
@@ -332,7 +331,6 @@ const SlideContent = forwardRef(({ slide, index, empty, onUpdateSlide, isExporti
     e.stopPropagation();
   };
 
-
   const onDrag = (e) => {
     if (!dragRef.current || !canvasRef.current) return;
 
@@ -347,24 +345,21 @@ const SlideContent = forwardRef(({ slide, index, empty, onUpdateSlide, isExporti
         if (el.id !== id) return el;
 
         const realHeight = elementRefs.current[id]?.getBoundingClientRect().height || el.height || 0;
-        
+
         const newX = Math.min(Math.max(0, initialX + dx), canvasRect.width - el.width);
         const newY = Math.min(Math.max(0, initialY + dy), canvasRect.height - realHeight);
 
         return { ...el, x: newX, y: newY };
       });
-
       currentElementsRef.current = next;
       return next;
     });
-
   };
 
   const stopDrag = () => {
     document.removeEventListener("mousemove", onDrag);
     document.removeEventListener("mouseup", stopDrag);
     dragRef.current = null;
-
     onUpdateSlide?.({ elements: currentElementsRef.current });
   };
 
@@ -385,7 +380,6 @@ const SlideContent = forwardRef(({ slide, index, empty, onUpdateSlide, isExporti
     const dy = e.clientY - startY;
 
     const isCorner = ["top-left", "top-right", "bottom-left", "bottom-right"].includes(direction);
-
     const updated = elements.map((el) => {
       if (el.id !== id) return el;
 
@@ -409,10 +403,8 @@ const SlideContent = forwardRef(({ slide, index, empty, onUpdateSlide, isExporti
           newX = el.x + dx;
         }
       }
-
       return { ...el, width: newWidth, x: newX, y: newY, fontSize: newFontSize };
     });
-
     setElements(updated);
   };
 
@@ -552,7 +544,6 @@ const SlideContent = forwardRef(({ slide, index, empty, onUpdateSlide, isExporti
                 </div>
               )
             )}
-
             {selectedId === el.id && (
               <>
                 <div className="absolute left-[-8px] top-1/2 -translate-y-1/2 cursor-ew-resize" onMouseDown={(e) => startResize(e, el.id, "left")}>
